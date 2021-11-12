@@ -2,12 +2,12 @@
 git log --merges --pretty=oneline --abbrev-commit --grep="Merge pull request #" --since=$DATE_FOR_JENKINS | awk -F '\\CU-' '{print $2}' | awk -F '\\_' '{print $1}'  | awk NF | awk '!visited[$0]++' > ids.git
 ##create links and grep task names
  xargs -I{}    curl --include \
-         --header "Authorization: "pk_32454463_PZBX64FTBZLUTFZCUS6KP47IS1GKD1M6"" \
+         --header "Authorization: "$clickup_api_key"" \
       'https://api.clickup.com/api/v2/task/{}/?custom_task_ids=&team_id=&include_subtasks=' < ids.git | awk -F '\\"id"' '{print $2}' | awk NF |  awk -F '\\"' '{print " https://app.clickup.com/t/"  $2 " "  $8}' > output.git
 ##update task with needed params
  xargs -I{}    curl --include \
      --request PUT \
-     --header "Authorization: "pk_32454463_PZBX64FTBZLUTFZCUS6KP47IS1GKD1M6"" \
+     --header "Authorization: "$clickup_api_key"" \
      --header "Content-Type: application/json" \
      --data-binary "{
     \"status\": \"prod (testing)\",
@@ -21,10 +21,10 @@ git log --merges --pretty=oneline --abbrev-commit --grep="Merge pull request #" 
 ##update tags
  xargs -I{}  curl --include \
      --request POST \
-     --header "Authorization: "pk_32454463_PZBX64FTBZLUTFZCUS6KP47IS1GKD1M6"" \
+     --header "Authorization: "$clickup_api_key"" \
      --header "Content-Type: application/json" \
   'https://api.clickup.com/api/v2/task/{}/tag/automated_moved_for_qa/?custom_task_ids=&team_id=' < ids.git
 
 DATE_FOR_JENKINS=$(date --iso-8601=seconds)
 COMMIT="Commit from the last deploy, all listed tasks moved to status ±prod (testing)±:"\\n$(cat output.git)
-curl -i -X POST -H "Content-Type: application/json" -d "{\"text\": \"$COMMIT\"}"  https://team.wildenv.com/hooks/pjqebuyt73fn3nfpmsmyx6nwhr
+curl -i -X POST -H "Content-Type: application/json" -d "{\"text\": \"$COMMIT\"}"  $log_mattermost
