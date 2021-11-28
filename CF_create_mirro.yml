@@ -1,0 +1,34 @@
+id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$domain Account&page=1&per_page=20&order=status&direction=desc&match=all" \
+     -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
+     -H "Content-Type: application/json" | jq '.' | grep -o '"id": *"[^"]*"' | grep -o '"[^"]*"$' | sed 's/"//g' | awk 'NR==1{print $1}')
+
+     curl -X GET "https://api.cloudflare.com/client/v4/zones/$id/subscription" \
+     -H "X-Auth-Email: devops@wildtornado.casino" \
+     -H "X-Auth-Key: 521efcef4d2b3c5c06d50ac64bbfe4bf895df" \
+     -H "Content-Type: application/json" \
+     --data '{"app":"rate_plan":{"id":"pro"}}'
+      
+curl -X POST "https://api.cloudflare.com/client/v4/zones/$id/dns_records" \
+     -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
+     -H "Content-Type: application/json" \
+     --data '{"type":"A","name":"'$domain'","content":"116.202.163.32","ttl":1,"proxied":true}'
+
+curl -X POST "https://api.cloudflare.com/client/v4/zones/$id/dns_records" \
+     -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
+     -H "Content-Type: application/json" \
+     --data '{"type":"A","name":"www.'$domain'","content":"'$ip_host'","ttl":1,"proxied":true}'
+
+     curl -X POST "https://api.cloudflare.com/client/v4/zones/$id/pagerules" \
+     -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
+     -H "Content-Type: application/json" \
+     --data '{"targets":[{"target":"url","constraint":{"operator":"matches","value":"*'$domain'\/api\/*"}}],"actions":[{"id":"disable_security"},{"id":"browser_check","value":"off"},{"id":"security_level","value":"essentially_off"}],"priority":1,"status":"active"}'
+
+
+curl -X PUT "https://api.cloudflare.com/client/v4/zones/$id/custom_pages/1000_errors" \
+     -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM"\
+     -H "Content-Type: application/json" \
+     --data '{"url":"https:\/\/error-pages.wildtornado.casino\/403.html","state":"customized"}'
+
+
+
+
