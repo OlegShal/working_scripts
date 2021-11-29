@@ -1,5 +1,5 @@
      #getting ID of Zone
-     id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$domain Account&page=1&per_page=20&order=status&direction=desc&match=all" \
+     id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$domain&match=any" \
      -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
      -H "Content-Type: application/json" | jq '.' | grep -o '"id": *"[^"]*"' | grep -o '"[^"]*"$' | sed 's/"//g' | awk 'NR==1{print $1}')
      #Change zone subscription to "pro"
