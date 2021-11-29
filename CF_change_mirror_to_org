@@ -1,13 +1,15 @@
 #getting ID of Zone
-     id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$domain Account&page=1&per_page=20&order=status&direction=desc&match=all" \
+     id=$(curl -X GET "https://api.cloudflare.com/client/v4/zones?name=$domain&match=any" \
      -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
      -H "Content-Type: application/json" | jq '.' | grep -o '"id": *"[^"]*"' | grep -o '"[^"]*"$' | sed 's/"//g' | awk 'NR==1{print $1}')
+
      #Change zone subscription to "free"
      curl -X GET "https://api.cloudflare.com/client/v4/zones/$id/subscription" \
      -H "X-Auth-Email: devops@wildtornado.casino" \
      -H "X-Auth-Key: 521efcef4d2b3c5c06d50ac64bbfe4bf895df" \
      -H "Content-Type: application/json" \
      --data '{"app":"rate_plan":{"id":"free"}}'
+
      #Remove DNS records
     for domain_rm in $domain www.$domain
     do
@@ -25,6 +27,7 @@
      -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
      -H "Content-Type: application/json" \
      --data '{"type":"CNAME","name":"'$domain'","content":"wildtornado.org","ttl":1,"proxied":true}'
+
      #Create DNS record for www.domain
      curl -X POST "https://api.cloudflare.com/client/v4/zones/$id/dns_records" \
      -H "Authorization: Bearer 9zD7kPcObtqv7DSnn425mizga2PReKyBsWd4YHRM" \
